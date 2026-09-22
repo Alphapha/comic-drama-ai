@@ -90,6 +90,9 @@ class Shot:
     dialogue: List[Dialogue] = field(default_factory=list)
     sound_effect: str = ""
     transition: str = "none"
+    # 连贯性锚点字段 (让模型显式说明分镜意图，便于校验和人工审查)
+    shot_purpose: str = ""              # 本镜头叙事目的 (如"建立场景氛围")
+    transition_reason: str = ""         # 到下一镜头的衔接原因
 
 
 @dataclass
@@ -99,6 +102,9 @@ class Scene:
     setting: str
     duration: float = 0.0
     shots: List[Shot] = field(default_factory=list)
+    # 连贯性锚点
+    scene_goal: str = ""                # 本场景叙事目标
+    next_scene_hook: str = ""           # 引出下一场景的钩子
 
 
 @dataclass
@@ -134,7 +140,11 @@ class Episode:
         for c in data.get("characters", []):
             ep.characters.append(Character(**c))
         for s in data.get("scenes", []):
-            scene = Scene(scene_id=s["scene_id"], setting=s.get("setting", ""))
+            scene = Scene(
+                scene_id=s["scene_id"], setting=s.get("setting", ""),
+                scene_goal=s.get("scene_goal", ""),
+                next_scene_hook=s.get("next_scene_hook", ""),
+            )
             for sh in s.get("shots", []):
                 shot = Shot(
                     shot_id=sh["shot_id"],
@@ -147,6 +157,8 @@ class Episode:
                     characters_in_frame=sh.get("characters_in_frame", []),
                     sound_effect=sh.get("sound_effect", ""),
                     transition=sh.get("transition", "none"),
+                    shot_purpose=sh.get("shot_purpose", ""),
+                    transition_reason=sh.get("transition_reason", ""),
                 )
                 for d in sh.get("dialogue", []):
                     shot.dialogue.append(Dialogue(**d))
@@ -177,6 +189,118 @@ class Episode:
         for scene in self.scenes:
             shots.extend(scene.shots)
         return shots
+
+    # ============================================================
+    # 结构化校验 (经验 2165105 / 1321475: 完成判定必须以"结构可解析 + 关键字段齐全"为准)
+    # ============================================================
+
+    def validate(self, min_shots: int = 6) -> List[str]:
+        """
+        校验剧本结构是否满足下游消费要求
+
+        Args:
+            min_shots: 最低分镜数阈值
+
+        Returns:
+            错误信息列表 (空列表=校验通过)
+        """
+        errors = []
+
+        # 1. 顶层必填
+        if not self.title or not self.title.strip():
+            errors.append("title 不能为空")
+
+        # 2. 角色数量
+        if len(self.characters) == 0:
+            errors.append("至少需要 1 个角色")
+
+        # 3. 场景/分镜
+        total = self.total_shots()
+        if len(self.scenes) == 0:
+            errors.append("至少需要 1 个场景")
+        if total < min_shots:
+            errors.append(f"分镜数 {total} < 最低要求 {min_shots}，可能被截断或生成不完整")
+
+        # 4. image_prompt 完整性
+        empty_prompt_shots = []
+        char_prompt_mismatch = []
+        char_names = {c.name for c in self.characters}
+
+        for scene in self.scenes:
+            for shot in scene.shots:
+                if not shot.image_prompt.strip():
+                    empty_prompt_shots.append(shot.shot_id)
+                # 5. characters_in_frame 必须引用已定义角色
+                for cn in shot.characters_in_frame:
+                    if cn not in char_names and cn != "Narrator":
+                        char_prompt_mismatch.append(f"shot{shot.shot_id}: characters_in_frame={cn} 未在角色表定义")
+
+        if empty_prompt_shots:
+            errors.append(f"以下分镜缺少 image_prompt: {empty_prompt_shots}")
+        if char_prompt_mismatch:
+            errors.extend(char_prompt_mismatch)
+
+        # 6. duration 合理性
+        for scene in self.scenes:
+            for shot in scene.shots:
+                if shot.duration <= 0 or shot.duration > 30:
+                    errors.append(f"scene{scene.scene_id}/shot{shot.shot_id}: duration={shot.duration}s 异常")
+
+        # 7. 对白角色必须存在
+        for scene in self.scenes:
+            for shot in scene.shots:
+                for d in shot.dialogue:
+                    if d.character not in char_names and d.character != "Narrator":
+                        errors.append(f"shot{shot.shot_id}: 对白角色 '{d.character}' 未在角色表定义")
+
+        return errors
+
+    def is_valid(self, min_shots: int = 6) -> bool:
+        """快速判断是否校验通过"""
+        return len(self.validate(min_shots)) == 0
+
+    # ============================================================
+    # 角色描述强注入 (经验 2350700: 人设一致性必须在最终 prompt 中硬锚点)
+    # ============================================================
+
+    def inject_character_descriptions(self, force_replace: bool = False) -> int:
+        """
+        把 characters_in_frame 中角色的 description **强制前缀** 注入到每段 image_prompt 开头。
+        解决 AI 生成时角色外观漂移的问题。
+
+        Args:
+            force_replace: True=覆盖已有前缀；False=仅当 prompt 开头不包含角色关键词时注入
+
+        Returns:
+            被修改的分镜数量
+        """
+        char_desc_map = {c.name: c.description for c in self.characters}
+        modified = 0
+
+        for scene in self.scenes:
+            for shot in scene.shots:
+                if not shot.characters_in_frame:
+                    continue
+
+                # 收集本镜头需要的角色描述
+                needed_parts = []
+                for cn in shot.characters_in_frame:
+                    desc = char_desc_map.get(cn, "")
+                    if desc:
+                        needed_parts.append(f"[{cn}: {desc}]")
+
+                if not needed_parts:
+                    continue
+
+                prefix = "CHARACTERS: " + "; ".join(needed_parts) + " | "
+                original = shot.image_prompt
+
+                if force_replace or not original.startswith("CHARACTERS:"):
+                    shot.image_prompt = prefix + original
+                    modified += 1
+
+        print(f"[注入] 角色描述已注入 {modified} 个分镜的 image_prompt")
+        return modified
 
 
 if __name__ == "__main__":
