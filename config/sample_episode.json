@@ -1,0 +1,237 @@
+{
+  "title": "玉佩奇缘 - 第一集",
+  "description": "高中生林小宇意外穿越到古代庭院，遇见神秘少女苏清鸢",
+  "episode_number": 1,
+  "aspect_ratio": "9:16",
+  "characters": [
+    {
+      "name": "林小宇",
+      "description": "16-year-old boy with short black hair, wearing white and blue Chinese school uniform, average height, confused expression",
+      "voice_gender": "male"
+    },
+    {
+      "name": "苏清鸢",
+      "description": "17-year-old girl with long flowing black hair in traditional bun, wearing elegant pale purple hanfu dress with silk embroidery, fair skin, mysterious eyes",
+      "voice_gender": "female"
+    }
+  ],
+  "scenes": [
+    {
+      "scene_id": 1,
+      "setting": "现代放学后的小巷 - 黄昏 - 夕阳斜射, 空无一人",
+      "scene_goal": "铺垫主角出场和玉佩触发点",
+      "next_scene_hook": "玉佩发光后画面眩晕转场",
+      "duration": 20.0,
+      "shots": [
+        {
+          "shot_id": 1,
+          "shot_type": "establishing",
+          "camera_move": "static",
+          "move_speed": "normal",
+          "duration": 4.0,
+          "image_prompt": "CHARACTERS: [林小宇: 16-year-old boy with short black hair, wearing white and blue Chinese school uniform]; A narrow alley at golden hour sunset, warm orange light slanting through buildings, trash cans, scattered leaves on ground, cinematic composition, anime style with realistic lighting, 9:16 vertical",
+          "image_style": "anime style, cinematic golden hour lighting",
+          "characters_in_frame": ["林小宇"],
+          "dialogue": [],
+          "shot_purpose": "建立空荡小巷场景",
+          "transition_reason": "主角走入画面"
+        },
+        {
+          "shot_id": 2,
+          "shot_type": "medium",
+          "camera_move": "zoom-in",
+          "move_speed": "normal",
+          "duration": 4.0,
+          "image_prompt": "CHARACTERS: [林小宇: 16-year-old boy with short black hair, wearing white and blue Chinese school uniform]; Teenage boy walking slowly down sunset alley, hands in pockets, bored expression, anime style, warm backlight, his shadow long on the ground",
+          "image_style": "anime style, warm sunset backlight",
+          "characters_in_frame": ["林小宇"],
+          "dialogue": [
+            {
+              "character": "林小宇",
+              "text": "今天又值完日...好累啊",
+              "emotion": "tired",
+              "position": "bottom",
+              "delay": 0.5
+            }
+          ],
+          "shot_purpose": "主角状态铺垫",
+          "transition_reason": "脚步踢到东西"
+        },
+        {
+          "shot_id": 3,
+          "shot_type": "closeup",
+          "camera_move": "static",
+          "move_speed": "normal",
+          "duration": 3.5,
+          "image_prompt": "CHARACTERS: [林小宇: 16-year-old boy with short black hair]; Close-up of a glowing ancient jade pendant on asphalt ground, mysterious blue-white light emanating from cracks, small sparkles floating around, golden hour background blurred",
+          "image_style": "anime style, mystical glow effect",
+          "characters_in_frame": [],
+          "dialogue": [],
+          "shot_purpose": "玉佩特写, 触发点",
+          "transition_reason": "主角弯腰去捡"
+        },
+        {
+          "shot_id": 4,
+          "shot_type": "medium",
+          "camera_move": "zoom-in",
+          "move_speed": "fast",
+          "duration": 3.5,
+          "image_prompt": "CHARACTERS: [林小宇: 16-year-old boy with short black hair, wearing school uniform]; Boy kneeling down reaching for glowing jade pendant, surprised expression, his hand approaching the pendant, anime style, dramatic lighting",
+          "image_style": "anime style, dramatic magical lighting",
+          "characters_in_frame": ["林小宇"],
+          "dialogue": [
+            {
+              "character": "林小宇",
+              "text": "这是什么...?",
+              "emotion": "curious",
+              "position": "bottom",
+              "delay": 0.3
+            }
+          ],
+          "shot_purpose": "主角注意到玉佩",
+          "transition_reason": "玉佩突然爆发光芒"
+        },
+        {
+          "shot_id": 5,
+          "shot_type": "closeup",
+          "camera_move": "zoom-in",
+          "move_speed": "fast",
+          "duration": 5.0,
+          "image_prompt": "CHARACTERS: [林小宇: 16-year-old boy with short black hair]; Extreme close-up of jade pendant exploding with blinding blue-white light, energy swirling outward, the boy's eyes wide with shock, motion blur effect, anime style, dynamic magical energy",
+          "image_style": "anime style, magical explosion effect, motion blur",
+          "characters_in_frame": ["林小宇"],
+          "dialogue": [
+            {
+              "character": "林小宇",
+              "text": "哇啊啊啊啊!",
+              "emotion": "shocked",
+              "position": "bottom",
+              "delay": 0.2
+            }
+          ],
+          "shot_purpose": "穿越触发",
+          "transition_reason": "眩晕转场"
+        }
+      ]
+    },
+    {
+      "scene_id": 2,
+      "setting": "神秘古代庭院 - 月夜 - 飞檐凉亭, 桂树, 池水倒影",
+      "scene_goal": "主角穿越落地, 遇见神秘少女",
+      "next_scene_hook": "少女自我介绍",
+      "duration": 22.0,
+      "shots": [
+        {
+          "shot_id": 6,
+          "shot_type": "wide",
+          "camera_move": "zoom-in",
+          "move_speed": "normal",
+          "duration": 4.0,
+          "image_prompt": "CHARACTERS: [林小宇: 16-year-old boy with short black hair, wearing Chinese school uniform]; Wide establishing shot of traditional Chinese ancient courtyard at night, full moon, wooden pavilion with curved eaves, osmanthus tree, quiet pond with moon reflection, stone path, lanterns glowing warm light, anime style, serene magical atmosphere",
+          "image_style": "anime style, moonlight, traditional Chinese architecture",
+          "characters_in_frame": ["林小宇"],
+          "dialogue": [],
+          "shot_purpose": "展示穿越后的新世界",
+          "transition_reason": "主角出现在庭院中"
+        },
+        {
+          "shot_id": 7,
+          "shot_type": "medium",
+          "camera_move": "pan-right",
+          "move_speed": "normal",
+          "duration": 3.5,
+          "image_prompt": "CHARACTERS: [林小宇: 16-year-old boy with short black hair, wearing school uniform]; Boy in modern school uniform standing confused in ancient courtyard, looking around in disbelief, anime style, moonlight casting soft shadows, contrast between modern clothes and ancient setting",
+          "image_style": "anime style, moonlight, contrast lighting",
+          "characters_in_frame": ["林小宇"],
+          "dialogue": [
+            {
+              "character": "林小宇",
+              "text": "我...我穿越了?!",
+              "emotion": "shocked",
+              "position": "bottom",
+              "delay": 0.3
+            }
+          ],
+          "shot_purpose": "主角反应",
+          "transition_reason": "注意到有人影"
+        },
+        {
+          "shot_id": 8,
+          "shot_type": "over-shoulder",
+          "camera_move": "static",
+          "move_speed": "normal",
+          "duration": 3.5,
+          "image_prompt": "CHARACTERS: [林小宇: 16-year-old boy, school uniform]; Over-shoulder shot from boy's perspective looking toward the pavilion, a figure in purple hanfu standing in the shadows of wooden pillars, moonlight partially illuminating her, anime style, mysterious atmosphere",
+          "image_style": "anime style, mysterious silhouette, moonlight",
+          "characters_in_frame": ["林小宇", "苏清鸢"],
+          "dialogue": [],
+          "shot_purpose": "引入神秘少女",
+          "transition_reason": "少女走出阴影"
+        },
+        {
+          "shot_id": 9,
+          "shot_type": "medium",
+          "camera_move": "zoom-in",
+          "move_speed": "slow",
+          "duration": 4.0,
+          "image_prompt": "CHARACTERS: [苏清鸢: 17-year-old girl with long black hair in traditional bun, wearing pale purple hanfu with silk embroidery]; Beautiful teenage girl in elegant purple hanfu stepping out from pavilion shadows, long black hair in traditional bun, calm mysterious expression, hands folded respectfully, moonlight on her face, anime style, ethereal beauty",
+          "image_style": "anime style, ethereal beauty, soft moonlight",
+          "characters_in_frame": ["苏清鸢"],
+          "dialogue": [
+            {
+              "character": "苏清鸢",
+              "text": "你终于来了, 时空旅人",
+              "emotion": "calm",
+              "position": "bottom",
+              "delay": 0.5
+            }
+          ],
+          "shot_purpose": "少女登场亮相",
+          "transition_reason": "主角震惊"
+        },
+        {
+          "shot_id": 10,
+          "shot_type": "over-shoulder",
+          "camera_move": "static",
+          "move_speed": "normal",
+          "duration": 3.5,
+          "image_prompt": "CHARACTERS: [林小宇: 16-year-old boy, school uniform]; Over-shoulder shot of modern boy facing ancient girl, mouth open in disbelief, anime style, soft moonlight, both characters clearly visible, cinematic composition",
+          "image_style": "anime style, cinematic two-shot, moonlight",
+          "characters_in_frame": ["林小宇", "苏清鸢"],
+          "dialogue": [
+            {
+              "character": "林小宇",
+              "text": "你...你是谁?",
+              "emotion": "confused",
+              "position": "bottom",
+              "delay": 0.3
+            }
+          ],
+          "shot_purpose": "两人对峙",
+          "transition_reason": "少女准备回答"
+        },
+        {
+          "shot_id": 11,
+          "shot_type": "closeup",
+          "camera_move": "zoom-out",
+          "move_speed": "slow",
+          "duration": 3.5,
+          "image_prompt": "CHARACTERS: [苏清鸢: 17-year-old girl, long black hair bun, purple hanfu]; Close-up of beautiful girl's calm face under moonlight, eyes shimmering with ancient wisdom, lips slightly parted, hair ornaments catching the light, anime style, emotional moment",
+          "image_style": "anime style, emotional close-up, moonlight",
+          "characters_in_frame": ["苏清鸢"],
+          "dialogue": [
+            {
+              "character": "苏清鸢",
+              "text": "我等你, 已经等了三百年",
+              "emotion": "mysterious",
+              "position": "bottom",
+              "delay": 0.4
+            }
+          ],
+          "shot_purpose": "悬念定格, 结尾钩子",
+          "transition_reason": "黑屏结束"
+        }
+      ]
+    }
+  ]
+}

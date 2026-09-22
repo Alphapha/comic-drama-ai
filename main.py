@@ -116,6 +116,89 @@ def step_compose_video(episode: Episode, frame_images: dict, audio_mapping: dict
 
 
 # ============================================================
+# mock 模式: 用内置剧本 + 占位图跑完整下游 (无需 API Key)
+# ============================================================
+
+def _run_mock_pipeline():
+    """
+    mock 模式 — 使用内置示例剧本 config/sample_episode.json,
+    用 PIL 生成占位图代替 DALL-E, 然后跑完整的 dialogue → tts → compose 流程。
+    让用户即使没有 API Key 也能端到端测试下游模块。
+    """
+    from PIL import Image, ImageDraw, ImageFont
+
+    print("\n" + "=" * 60)
+    print("🎭 MOCK 模式 - 无需 API Key")
+    print("=" * 60)
+
+    # 1. 加载示例剧本
+    sample_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config", "sample_episode.json")
+    episode = Episode.from_json(sample_path)
+    episode.inject_character_descriptions()
+    print(f"✅ 已加载示例剧本: '{episode.title}' ({episode.total_shots()} 分镜)")
+
+    # 2. 用 PIL 生成占位图代替 AI 生图
+    print("\n>>> 生成占位图 (PIL) ...")
+    artwork = {}
+    colors = [(200, 220, 240), (240, 220, 200), (220, 240, 220),
+              (230, 210, 240), (240, 200, 210)]
+    for i, shot in enumerate(episode.get_all_shots()):
+        # 生成 1024x1792 占位图
+        bg_color = colors[i % len(colors)]
+        img = Image.new("RGB", (1024, 1792), bg_color)
+        d = ImageDraw.Draw(img)
+        # 画个"角色"示意
+        d.ellipse([380, 500, 644, 764], fill=(255, 220, 180), outline=(80, 80, 80), width=3)  # 头
+        d.rectangle([360, 764, 664, 1300], fill=(120, 140, 200), outline=(80, 80, 80), width=3)  # 身体
+        # 画标题
+        try:
+            font = ImageFont.truetype("/System/Library/Fonts/PingFang.ttc", 36)
+        except Exception:
+            font = ImageFont.load_default()
+        d.text((50, 50), f"Shot {shot.shot_id}: {shot.shot_type}", fill=(40, 40, 40), font=font)
+        if shot.camera_move != "static":
+            d.text((50, 100), f"camera_move: {shot.camera_move}", fill=(80, 80, 80), font=font)
+
+        fname = f"mock_shot{shot.shot_id}.png"
+        save_path = os.path.join(CONFIG["paths"]["artwork"], fname)
+        img.save(save_path, "PNG")
+        artwork[shot.shot_id] = save_path
+    print(f"✅ 已生成 {len(artwork)} 张占位图")
+
+    # 3. 对白气泡
+    print("\n>>> 添加对白气泡 ...")
+    from tools.dialogue import apply_dialogues_to_all
+    frame_images = apply_dialogues_to_all(episode, artwork)
+    print(f"✅ 已处理 {len(frame_images)} 张带对白分镜")
+
+    # 4. TTS 配音
+    print("\n>>> 生成 AI 配音 ...")
+    try:
+        audio_mapping = step_generate_tts(episode)
+    except ImportError:
+        print("  ⚠️ 未安装 edge-tts, 跳过配音 (pip install edge-tts)")
+        audio_mapping = {}
+    except Exception as e:
+        print(f"  ⚠️ TTS 失败: {e}, 输出无对白视频")
+        audio_mapping = {}
+
+    # 5. 合成视频
+    print("\n>>> 合成视频 ...")
+    output = step_compose_video(episode, frame_images, audio_mapping)
+
+    # 总结
+    print("\n" + "=" * 60)
+    print("🎉 MOCK 模式完成!")
+    print("=" * 60)
+    print(f"  输出视频: {output}")
+    print(f"\n💡 想体验真实 AI 效果? 请:")
+    print(f"  1. pip install openai && cp .env.example .env")
+    print(f"  2. 在 .env 填入 OPENAI_API_KEY")
+    print(f"  3. python main.py demo")
+    print("=" * 60)
+
+
+# ============================================================
 # 一键全流程
 # ============================================================
 
@@ -198,6 +281,7 @@ def main():
     s_mode.add_argument("--single-pass", action="store_true")
 
     p_new = sub.add_parser("new", help="等同 demo")
+    p_mock = sub.add_parser("mock", help="使用内置示例剧本跑完整下游流程 (无需 API Key)")
 
     # 部分步骤
     sub.add_parser("image", help="从已有 episode.json 生成插画")
@@ -207,7 +291,11 @@ def main():
     args = parser.parse_args()
     ensure_dirs()
 
-    if args.cmd in ("demo", "new"):
+    if args.cmd == "mock":
+        # 使用内置示例剧本, 跳过剧本生成阶段
+        _run_mock_pipeline()
+
+    elif args.cmd in ("demo", "new"):
         run_full_pipeline(DEMO_STORY, two_phase=True)
 
     elif args.cmd == "make":
