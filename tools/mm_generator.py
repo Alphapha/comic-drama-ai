@@ -543,14 +543,55 @@ def generate_episode(
             print(f"    scene{s['scene_id']}: {s.get('scene_goal', '?')} "
                   f"({len(s.get('shots', []))} shots)")
 
-        # --- 阶段 2: 按场景填充 ---
+        # --- 阶段 2: 按场景填充 (per-scene 重试 + 降级) ---
         print("\n>>> 阶段 2/2: 逐场景填充分镜详情")
         enriched_scenes = []
         total_shots = 0
         for i, scene_outline in enumerate(scenes_outline):
             prev = scenes_outline[i - 1] if i > 0 else None
-            print(f"\n  填充 scene {scene_outline['scene_id']} ...")
-            enriched = _enrich_scene_with_shots(scene_outline, characters, prev)
+            scene_id = scene_outline["scene_id"]
+            print(f"\n  填充 scene {scene_id} ...")
+
+            # per-scene 重试 (最多 2 次)
+            enriched = None
+            for attempt in range(2):
+                try:
+                    enriched = _enrich_scene_with_shots(scene_outline, characters, prev)
+                    break
+                except Exception as e:
+                    print(f"    [重试 {attempt+1}/2] scene {scene_id} 生成失败: {e}")
+                    time.sleep(1)
+
+            # 降级: 使用 outline 的骨架 shots 填充基本字段
+            if enriched is None:
+                print(f"    [降级] scene {scene_id} 生成失败，使用骨架数据")
+                outline_shots = scene_outline.get("shots", [])
+                degraded_shots = []
+                for os_ in outline_shots:
+                    degraded_shots.append({
+                        "shot_id": os_.get("shot_id", i + 1),
+                        "shot_type": "medium",
+                        "camera_move": "static",
+                        "move_speed": "normal",
+                        "duration": 4.0,
+                        "image_prompt": f"[请手动补全] {os_.get('shot_purpose', '')}",
+                        "image_style": "anime style, cinematic lighting",
+                        "characters_in_frame": os_.get("characters_in_frame", []),
+                        "dialogue": [],
+                        "shot_purpose": os_.get("shot_purpose", ""),
+                        "transition_reason": "",
+                    })
+                enriched = dict(scene_outline)
+                enriched["shots"] = degraded_shots
+
+            # --- shot_id 一致性检查 ---
+            outline_ids = {s["shot_id"] for s in scene_outline.get("shots", [])}
+            enriched_ids = {s["shot_id"] for s in enriched.get("shots", [])}
+            if outline_ids and enriched_ids != outline_ids:
+                print(f"    [修正] shot_id 不匹配, 重新编号")
+                for j, shot in enumerate(enriched["shots"]):
+                    shot["shot_id"] = j + 1
+
             enriched_scenes.append(enriched)
             total_shots += len(enriched["shots"])
             print(f"    -> {len(enriched['shots'])} 个分镜")

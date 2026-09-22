@@ -54,12 +54,12 @@ DEMO_STORY = """\
 # 各阶段实现
 # ============================================================
 
-def step_generate_script(story_idea: str, save_path: str = None) -> Episode:
+def step_generate_script(story_idea: str, save_path: str = None, two_phase: bool = True) -> Episode:
     """阶段1: 生成剧本 (JSON)"""
     print("\n" + "=" * 60)
     print("【阶段 1】生成漫剧剧本 + 分镜")
     print("=" * 60)
-    return generate_episode(story_idea, json_path=save_path)
+    return generate_episode(story_idea, json_path=save_path, two_phase=two_phase)
 
 
 def step_generate_images(episode: Episode) -> dict:
@@ -119,13 +119,13 @@ def step_compose_video(episode: Episode, frame_images: dict, audio_mapping: dict
 # 一键全流程
 # ============================================================
 
-def run_full_pipeline(story_idea: str):
+def run_full_pipeline(story_idea: str, two_phase: bool = True):
     """一键跑完整流程: 剧本 -> 插画 -> 对白 -> 配音 -> 视频"""
     ensure_dirs()
     print_config()
 
     # 1. 剧本
-    episode = step_generate_script(story_idea)
+    episode = step_generate_script(story_idea, two_phase=two_phase)
 
     # 2. 插画
     artwork = step_generate_images(episode)
@@ -184,11 +184,18 @@ def main():
 
     # demo / make
     p_demo = sub.add_parser("demo", help="用内置 Demo 故事端到端跑通")
+
     p_make = sub.add_parser("make", help="根据创意生成完整漫剧")
     p_make.add_argument("idea", help="故事创意描述")
+    mode_group = p_make.add_mutually_exclusive_group()
+    mode_group.add_argument("--two-phase", action="store_true", default=True, help="两阶段生成 (默认, 更稳定)")
+    mode_group.add_argument("--single-pass", action="store_true", help="单次全量生成 (快但可能被截断)")
 
     p_script = sub.add_parser("script", help="仅生成剧本 JSON")
     p_script.add_argument("idea", help="故事创意描述")
+    s_mode = p_script.add_mutually_exclusive_group()
+    s_mode.add_argument("--two-phase", action="store_true", default=True)
+    s_mode.add_argument("--single-pass", action="store_true")
 
     p_new = sub.add_parser("new", help="等同 demo")
 
@@ -201,13 +208,15 @@ def main():
     ensure_dirs()
 
     if args.cmd in ("demo", "new"):
-        run_full_pipeline(DEMO_STORY)
+        run_full_pipeline(DEMO_STORY, two_phase=True)
 
     elif args.cmd == "make":
-        run_full_pipeline(args.idea)
+        two_phase = not args.single_pass  # 默认 True
+        run_full_pipeline(args.idea, two_phase=two_phase)
 
     elif args.cmd == "script":
-        ep = step_generate_script(args.idea)
+        two_phase = not args.single_pass
+        ep = step_generate_script(args.idea, two_phase=two_phase)
         print(f"\n✅ 剧本已生成: {ep.title} -> data/episode.json")
 
     elif args.cmd == "image":
