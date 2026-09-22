@@ -104,6 +104,36 @@ python main.py compose              # 4. 合成视频
 
 ---
 
+## 🛡️ 剧本生成稳定化机制
+
+长剧本一次性生成极易被 `max_tokens` 截断，导致 JSON 不闭合、分镜不完整、角色漂移。我们针对性做了 **6 层稳定化**：
+
+| 问题 | 解决方案 |
+|------|----------|
+| **长 JSON 被截断** | **两阶段生成**：阶段1 先生成角色+场景骨架 (token < 3k)，阶段2 按场景逐段生成分镜详情 (每次 5k token) |
+| **JSON 不闭合** | **四层解析链**：直接 json.loads → markdown 代码块提取 → 手动补闭合括号 → AI 修复 (最多 2 次) |
+| **结构性错误** | **validate() 结构化校验**：7 类检查 — 标题/角色数/场景数/分镜数/image_prompt/角色引用/duration |
+| **角色外观漂移** | **inject_character_descriptions()**：自动把 characters_in_frame 中角色的英文 description **强制前缀** 注入每段 image_prompt |
+| **模型报错混乱** | **细粒度错误分类**：`ModelAuthError`(401)/`ModelNotFoundError`(404)/`ModelQuotaError`(额度)/`ModelNetworkError` — 401/额度/NotFound 直接抛出让用户配置，网络错误指数退避重试 |
+| **JSON 随机偏离** | temperature 从 0.8 降到 **0.4** — 结构化 JSON 不需要高随机性 |
+
+### 连贯性锚点字段 (schema 层)
+
+为了让跨场景连贯可**机器校验** + **人工审查**，每个 Scene/Shot 都加了强制锚点：
+
+```json
+{
+  "scene_goal": "本场景叙事目标 (15字内)",
+  "next_scene_hook": "引出下一场景的钩子",
+  "shots": [{
+    "shot_purpose": "本镜头目的 (15字内)",
+    "transition_reason": "到下一镜头的衔接原因"
+  }]
+}
+```
+
+---
+
 ## 🧩 模块详解
 
 ### 1. `tools/schema.py` — 数据格式
