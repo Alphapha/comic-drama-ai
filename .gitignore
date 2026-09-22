@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# 环境配置 (密钥禁止提交)
+.env
+
+# 生成的大文件
+artwork/*.png
+artwork/*.jpg
+artwork/*.webp
+frames/*.png
+frames/*.jpg
+audio/*.mp3
+audio/*.wav
+output/*.mp4
+output/*.mov
+
+# 数据目录下的大文件
+data/episode.json
+data/shot_images.json
+
+# 临时文件
+_test_*
+.DS_Store

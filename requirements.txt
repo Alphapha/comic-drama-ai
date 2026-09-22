@@ -1,0 +1,21 @@
+# 漫剧 AI 制作工具链依赖
+# ============================================
+
+# 多模态模型 API 客户端
+openai>=1.0.0                # OpenAI GPT-4o + DALL-E 3
+google-generativeai>=0.8.0   # Google Gemini (可选)
+
+# 图像处理
+Pillow>=10.0.0               # 对白/气泡排版
+rembg>=2.0.50                 # 背景移除 (可选)
+
+# 视频合成
+moviepy>=2.0.0                # 运镜、转场、视频合成
+imageio-ffmpeg>=0.4.9         # moviepy 的 ffmpeg 后端
+
+# AI 配音
+edge-tts>=6.1.0               # 免费微软 Edge TTS (中文效果好)
+
+# 工具库
+python-dotenv>=1.0.0          # .env 配置加载
+requests>=2.31.0
